@@ -2,7 +2,7 @@
 {
     public interface IGenericBuffer<T>
     {
-        void ForceRefresh();
+        T ForceRefresh();
         T GetValue();
         void Reset();
     }

@@ -2,7 +2,7 @@
 
 namespace GenericBuffer.Core
 {
-    public class GenericBuffer<T>
+    public class GenericBuffer<T>: IGenericBuffer<T>
     {
         private readonly Func<T> _factory_;
         private readonly TimeSpan _bufferingPeriod_;
@@ -27,13 +27,15 @@ namespace GenericBuffer.Core
             }
         }
 
-        public void ForceRefresh()
+        public T ForceRefresh()
         {
             lock (_locker_)
             {
                 buffer = _factory_();
                 validUntil = NewValidUntil();
             }
+
+            return buffer;
         }
 
         public T GetValue()
