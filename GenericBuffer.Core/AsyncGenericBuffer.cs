@@ -7,17 +7,20 @@ namespace GenericBuffer.Core
     public class AsyncGenericBuffer<T> : IAsyncGenericBuffer<T>
     {
         private readonly Func<Task<T>> _factory_;
+        private readonly Func<DateTime> _clock_;
         private readonly TimeSpan _bufferingPeriod_;
-
+        
         private readonly SemaphoreSlim semaphoreSlim = new SemaphoreSlim(1);
-
         private DateTime validUntil = DateTime.MinValue;
         private T buffer;
 
-        public AsyncGenericBuffer(Func<Task<T>> factory, TimeSpan bufferingPeriod)
+        public AsyncGenericBuffer(Func<Task<T>> factory, TimeSpan bufferingPeriod) : this(factory, bufferingPeriod, () => DateTime.Now) { }
+
+        public AsyncGenericBuffer(Func<Task<T>> factory, TimeSpan bufferingPeriod, Func<DateTime> clock)
         {
             _factory_ = factory ?? throw new ArgumentNullException(nameof(factory));
             _bufferingPeriod_ = bufferingPeriod;
+            _clock_ = clock;
         }
 
         public async Task ResetAsync()
@@ -51,13 +54,13 @@ namespace GenericBuffer.Core
 
         public async Task<T> GetValueAsync()
         {
-            if (DateTime.Now < validUntil)
+            if (_clock_() < validUntil)
                 return buffer;
 
             await semaphoreSlim.WaitAsync();
             try
             {
-                if (DateTime.Now < validUntil)
+                if (_clock_() < validUntil)
                     return buffer;
 
                 validUntil = NewValidUntil();
@@ -71,6 +74,6 @@ namespace GenericBuffer.Core
             return buffer;
         }
 
-        private DateTime NewValidUntil() => DateTime.Now.Add(_bufferingPeriod_);
+        private DateTime NewValidUntil() => _clock_().Add(_bufferingPeriod_);
     }
 }

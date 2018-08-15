@@ -9,7 +9,6 @@ namespace GenericBuffer.Core
         private readonly Func<DateTime> _clock_;
 
         private readonly object _locker_ = new object();
-
         private DateTime validUntil = DateTime.MinValue;
         private T buffer;
 

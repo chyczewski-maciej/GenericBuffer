@@ -1,43 +1,44 @@
 ﻿using GenericBuffer.Core;
 using System;
-using System.Collections.Generic;
-using System.Threading;
-using System.Threading.Tasks;
 using Xunit;
 
 namespace GenericBuffer.Tests
 {
     public class GenericBufferTests
     {
-        Func<DateTime> CreateFakeClock()
+        [Fact]
+        public void ShouldReturnNewValueAfterBufferingPeriodPasses()
         {
-            var enumerator = DateTimeSequence().GetEnumerator();
-
-            return () =>
-            {
-                enumerator.MoveNext();
-                return enumerator.Current;
-            };
+            DateTime dateTime = DateTime.MinValue;
+            var bufferingPeriod = TimeSpan.FromTicks(1);
+            var incrementalClock = new IncrementalClock();
+            int executions = 0;
+            var genericBuffer = new GenericBuffer<int>(factory: () => executions++, bufferingPeriod: bufferingPeriod, clock: () => dateTime);
 
 
-            IEnumerable<DateTime> DateTimeSequence()
-            {
-                long tick = 0;
-                while (tick < long.MaxValue)
-                    yield return new DateTime(Interlocked.Increment(ref tick));
-            }
+            Assert.Equal(0, genericBuffer.GetValue()); // Before buffering period is past
+
+            dateTime += bufferingPeriod;
+            Assert.Equal(1, genericBuffer.GetValue()); // After first buffering period is past
+
+            dateTime += bufferingPeriod; 
+            Assert.Equal(2, genericBuffer.GetValue()); // After second buffering period is past
         }
 
-
         [Fact]
-        public void Test()
+        public void ShouldReturnTheSameObjectWhileInTheSameBufferingPeriod()
         {
-            int executions = 0;
-            Func<int> factory = () => executions++;
-            var fakeClock = new FakeClock();
+            DateTime dateTime = DateTime.MinValue;
+            var bufferingPeriod = TimeSpan.FromTicks(1);
+            var genericBuffer = new GenericBuffer<object>(factory: () => new object(), bufferingPeriod: bufferingPeriod, clock: () => dateTime);
 
-            var genericBuffer = new GenericBuffer<int>(factory, TimeSpan.FromMilliseconds(5), fakeClock.GetNextDateTime);
+            object firstValue = genericBuffer.GetValue();
+            Assert.Same(firstValue, genericBuffer.GetValue());
+            Assert.Same(firstValue, genericBuffer.GetValue());
 
+            dateTime += bufferingPeriod;
+            Assert.NotSame(firstValue, genericBuffer.GetValue());
+            Assert.Same(genericBuffer.GetValue(), genericBuffer.GetValue());
         }
     }
 }
