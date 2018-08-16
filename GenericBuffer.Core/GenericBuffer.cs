@@ -4,7 +4,7 @@ namespace GenericBuffer.Core
 {
     public class GenericBuffer<T> : IGenericBuffer<T>
     {
-        private readonly Func<T> _factory_;
+        private readonly Func<T, T> _factory_;
         private readonly TimeSpan _bufferingPeriod_;
         private readonly Func<DateTime> _clock_;
 
@@ -13,8 +13,10 @@ namespace GenericBuffer.Core
         private T buffer;
 
         public GenericBuffer(Func<T> factory, TimeSpan bufferingPeriod) : this(factory, bufferingPeriod, () => DateTime.Now) { }
+        public GenericBuffer(Func<T> factory, TimeSpan bufferingPeriod, Func<DateTime> clock) : this(_ => factory(), bufferingPeriod, clock) { }
+        public GenericBuffer(Func<T, T> factory, TimeSpan bufferingPeriod) : this(factory, bufferingPeriod, () => DateTime.Now) { }
 
-        public GenericBuffer(Func<T> factory, TimeSpan bufferingPeriod, Func<DateTime> clock)
+        public GenericBuffer(Func<T, T> factory, TimeSpan bufferingPeriod, Func<DateTime> clock)
         {
             _factory_ = factory ?? throw new ArgumentNullException(nameof(factory));
             _bufferingPeriod_ = bufferingPeriod;
@@ -34,7 +36,7 @@ namespace GenericBuffer.Core
         {
             lock (_locker_)
             {
-                buffer = _factory_();
+                buffer = _factory_(buffer);
                 validUntil = NewValidUntil();
             }
 
@@ -51,10 +53,8 @@ namespace GenericBuffer.Core
                 if (_clock_() < validUntil)
                     return buffer;
 
-                validUntil = NewValidUntil();
-                buffer = _factory_.Invoke();
+                return ForceRefresh();
             }
-            return buffer;
         }
 
         private DateTime NewValidUntil() => _clock_().Add(_bufferingPeriod_);
