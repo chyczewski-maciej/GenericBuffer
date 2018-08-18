@@ -1,9 +1,27 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net462;netstandard2.0</TargetFrameworks>
-    <IsPackable>true</IsPackable>
+    <TargetFrameworks>net45;netstandard2.0</TargetFrameworks>
     <LangVersion>7.3</LangVersion>
+    <Title>GenericBuffer</Title>
+    <Authors>Maciej Chyczewski</Authors>
+    <Summary>GenericBuffer for C#</Summary>
+    <Copyright>Copyright (c) Maciej Chyczewski. All rights reserved.</Copyright>
+    <Description></Description>
+  
+    <PackageProjectUrl>https://github.com/chyczewski-maciej/GenericBuffer</PackageProjectUrl>
+    <PackageLicenseUrl>https://github.com/chyczewski-maciej/GenericBuffer/blob/master/LICENSE.md</PackageLicenseUrl>
+    <PackageTags>C#, Buffer, Generic, GenericBuffer, AsyncGenericBuffer</PackageTags>
+  
+    <OutputType>library</OutputType>
+    
+    <FileVersion>0.0.1.0</FileVersion>
+    <AssemblyVersion>0.0.1.0</AssemblyVersion>
+    <PackageVersion>0.0.1.0</PackageVersion>
+    
+    <IsPackable>true</IsPackable>
+    <PackageId>GenericBuffer.Core</PackageId>
+    <OutputPath>../artifacts</OutputPath>
   </PropertyGroup>
 
 </Project>
