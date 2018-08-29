@@ -12,6 +12,9 @@
     <PackageProjectUrl>https://github.com/chyczewski-maciej/GenericBuffer</PackageProjectUrl>
     <PackageLicenseUrl>https://github.com/chyczewski-maciej/GenericBuffer/blob/master/LICENSE.md</PackageLicenseUrl>
     <PackageTags>C#, Buffer, Generic, GenericBuffer, AsyncGenericBuffer</PackageTags>
+
+    <RepositoryUrl>https://github.com/chyczewski-maciej/GenericBuffer.git</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
   
     <OutputType>library</OutputType>
     
