@@ -1,5 +1,6 @@
 ﻿using GenericBuffer.Core;
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -7,6 +8,48 @@ namespace GenericBuffer.Tests
 {
     public class AsyncGenericBufferTests
     {
+        [Fact]
+        public void ThrowsArgumentNullExceptionWhenFactoryFunctionIsNull()
+        {
+            Func<object, Task<object>> funcTT = null;
+            Func<Task<object>> funcT = null;
+
+            Assert.Throws<ArgumentNullException>(() => new AsyncGenericBuffer<object>(
+                factory: funcTT,
+                initialValue: Task.FromResult(new object()),
+                bufferingPeriod: TimeSpan.Zero));
+
+            Assert.Throws<ArgumentNullException>(() => new AsyncGenericBuffer<object>(
+                factory: funcTT,
+                initialValue: new object(),
+                bufferingPeriod: TimeSpan.Zero,
+                ClockFactory.UtcClock()));
+
+            Assert.Throws<ArgumentNullException>(() => new AsyncGenericBuffer<object>(
+                factory: funcT,
+                bufferingPeriod: TimeSpan.Zero));
+
+            Assert.Throws<ArgumentNullException>(() => new AsyncGenericBuffer<object>(
+                factory: funcT,
+                bufferingPeriod: TimeSpan.Zero,
+                ClockFactory.UtcClock()));
+        }
+
+        [Fact]
+        public void ThrowsArgumentNullExceptionWhenClockFuncIsNull()
+        {
+            Assert.Throws<ArgumentNullException>(() => new AsyncGenericBuffer<object>(
+                factory: _ => Task.FromResult(new object()),
+                initialValue: new object(),
+                bufferingPeriod: TimeSpan.Zero,
+                clock: null));
+
+            Assert.Throws<ArgumentNullException>(() => new AsyncGenericBuffer<object>(
+                factory: () => Task.FromResult(new object()),
+                bufferingPeriod: TimeSpan.Zero,
+                clock: null));
+        }
+
         [Fact]
         public async Task ReturnsNewValueAfterBufferingPeriodPasses()
         {
@@ -46,7 +89,10 @@ namespace GenericBuffer.Tests
         public async Task ThrowsTheSameExceptionAsFactory()
         {
             var expectedException = new Exception();
-            var AsyncGenericBuffer = new AsyncGenericBuffer<object>(factory: () => throw expectedException, bufferingPeriod: TimeSpan.Zero, clock: ClockFactory.UtcClock());
+            var AsyncGenericBuffer = new AsyncGenericBuffer<object>(
+                factory: () => throw expectedException,
+                bufferingPeriod: TimeSpan.Zero,
+                clock: ClockFactory.UtcClock());
 
             Exception recoredException = await Record.ExceptionAsync(async () => await AsyncGenericBuffer.GetValueAsync());
 
@@ -56,7 +102,10 @@ namespace GenericBuffer.Tests
         [Fact]
         public async Task ResetForcesCreatingANewValue()
         {
-            var AsyncGenericBuffer = new AsyncGenericBuffer<object>(factory: () => Task.FromResult(new object()), bufferingPeriod: TimeSpan.FromTicks(1), clock: ClockFactory.FrozenClock(DateTime.MinValue));
+            var AsyncGenericBuffer = new AsyncGenericBuffer<object>(
+                factory: () => Task.FromResult(new object()),
+                bufferingPeriod: TimeSpan.FromTicks(1),
+                clock: ClockFactory.FrozenClock(DateTime.MinValue));
 
             var firstObject = await AsyncGenericBuffer.GetValueAsync();
             Assert.Same(firstObject, await AsyncGenericBuffer.GetValueAsync());
@@ -65,6 +114,54 @@ namespace GenericBuffer.Tests
             await AsyncGenericBuffer.ResetAsync();
 
             Assert.NotSame(firstObject, await AsyncGenericBuffer.GetValueAsync());
+        }
+
+
+
+        [Fact]
+        public async Task ForceRefreshCreatesNewValueEvenIfTheOldOneIsStillValid()
+        {
+            var asyncGenericBuffer = new AsyncGenericBuffer<object>(
+                factory: () => Task.FromResult(new object()),
+                bufferingPeriod: TimeSpan.FromTicks(1),
+                clock: ClockFactory.FrozenClock(DateTime.MinValue));
+
+            var val1 = await asyncGenericBuffer.GetValueAsync();
+            var val2 = await asyncGenericBuffer.GetValueAsync();
+            var forced = await asyncGenericBuffer.ForceRefreshAsync();
+            var val3 = await asyncGenericBuffer.GetValueAsync();
+            var val4 = await asyncGenericBuffer.GetValueAsync();
+
+            Assert.Same(val1, val2);
+            Assert.NotSame(val1, forced);
+            Assert.Same(forced, val3);
+            Assert.Same(val3, val4);
+        }
+
+        [Fact]
+        public async Task CreatesItemOnlyOnceWhenGetValueIsCalledInParallel()
+        {
+            var rand = new Random();
+            var blockFactoryMethod = true;
+
+            var asyncGenericBuffer = new AsyncGenericBuffer<object>(
+                factory: () =>
+                {
+                    while (blockFactoryMethod) { }
+                    return Task.FromResult(new object());
+                },
+                bufferingPeriod: TimeSpan.FromTicks(1),
+                clock: ClockFactory.FrozenClock(DateTime.MinValue));
+
+            var tasks = Enumerable.Range(0, 100)
+                        .Select(_ => Task.Run(async () => await asyncGenericBuffer.GetValueAsync()));
+
+            blockFactoryMethod = false;
+            await Task.Delay(1000);
+            object[] results = await Task.WhenAll(tasks);
+
+            foreach (var result in results)
+                Assert.Same(results.First(), result);
         }
     }
 }

@@ -15,14 +15,15 @@ namespace GenericBuffer.Core
         private T buffer;
 
         public AsyncGenericBuffer(Func<Task<T>> factory, TimeSpan bufferingPeriod) : this(factory, bufferingPeriod, () => DateTime.Now) { }
-        public AsyncGenericBuffer(Func<Task<T>> factory, TimeSpan bufferingPeriod, Func<DateTime> clock) : this(_ => factory(), bufferingPeriod, clock) { }
-        public AsyncGenericBuffer(Func<T, Task<T>> factory, TimeSpan bufferingPeriod) : this(factory, bufferingPeriod, () => DateTime.Now) { }
+        public AsyncGenericBuffer(Func<Task<T>> factory, TimeSpan bufferingPeriod, Func<DateTime> clock) : this(Convert_FuncTToTaskT_To_FuncTaskT(factory), default, bufferingPeriod, clock) { }
+        public AsyncGenericBuffer(Func<T, Task<T>> factory, T initialValue, TimeSpan bufferingPeriod) : this(factory, initialValue, bufferingPeriod, () => DateTime.Now) { }
 
-        public AsyncGenericBuffer(Func<T, Task<T>> factory, TimeSpan bufferingPeriod, Func<DateTime> clock)
+        public AsyncGenericBuffer(Func<T, Task<T>> factory, T initialValue, TimeSpan bufferingPeriod, Func<DateTime> clock)
         {
             _factory_ = factory ?? throw new ArgumentNullException(nameof(factory));
+            _clock_ = clock  ?? throw new ArgumentNullException(nameof(clock));;
             _bufferingPeriod_ = bufferingPeriod;
-            _clock_ = clock;
+            buffer = initialValue;
         }
 
         public async Task ResetAsync()
@@ -56,8 +57,6 @@ namespace GenericBuffer.Core
 
         private async Task<T> RefreshAsync(bool considerBuffer)
         {
-
-
             await semaphoreSlim.WaitAsync();
             try
             {
@@ -72,6 +71,13 @@ namespace GenericBuffer.Core
             {
                 semaphoreSlim.Release();
             }
+        }
+
+        private static Func<T, Task<T>> Convert_FuncTToTaskT_To_FuncTaskT(Func<Task<T>> func)
+        {
+            if (func == null)
+                throw new ArgumentNullException(nameof(func));
+            return _ => func();
         }
     }
 }

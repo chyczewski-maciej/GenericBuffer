@@ -13,14 +13,20 @@ namespace GenericBuffer.Core
         private T _buffer;
 
         public GenericBuffer(Func<T> factory, TimeSpan bufferingPeriod) : this(factory, bufferingPeriod, () => DateTime.Now) { }
-        public GenericBuffer(Func<T> factory, TimeSpan bufferingPeriod, Func<DateTime> clock) : this(_ => factory(), bufferingPeriod, default, clock) { }
-        public GenericBuffer(Func<T, T> factory, TimeSpan bufferingPeriod, T initialValue) : this(factory, bufferingPeriod, initialValue, () => DateTime.Now) { }
+        public GenericBuffer(Func<T> factory, TimeSpan bufferingPeriod, Func<DateTime> clock)
+            : this(
+                  factory: Convert_FuncTToT_To_FuncT(factory),
+                  initialValue: default,
+                  bufferingPeriod: bufferingPeriod,
+                  clock: clock)
+        { }
+        public GenericBuffer(Func<T, T> factory, T initialValue, TimeSpan bufferingPeriod) : this(factory, initialValue, bufferingPeriod, () => DateTime.Now) { }
 
-        public GenericBuffer(Func<T, T> factory, TimeSpan bufferingPeriod, T initialValue, Func<DateTime> clock)
+        public GenericBuffer(Func<T, T> factory, T initialValue, TimeSpan bufferingPeriod, Func<DateTime> clock)
         {
             _factory_ = factory ?? throw new ArgumentNullException(nameof(factory));
+            _clock_ = clock ?? throw new ArgumentNullException(nameof(clock)); ;
             _bufferingPeriod_ = bufferingPeriod;
-            _clock_ = clock;
             _buffer = initialValue;
         }
 
@@ -33,31 +39,35 @@ namespace GenericBuffer.Core
             }
         }
 
-        public T ForceRefresh()
-        {
-            lock (_locker_)
-            {
-                _buffer = _factory_(_buffer);
-                _validUntil = NewValidUntil();
-            }
-
-            return _buffer;
-        }
+        public T ForceRefresh() => Refresh(considerBuffer: false);
 
         public T GetValue()
         {
             if (_clock_() < _validUntil)
                 return _buffer;
+            return Refresh(considerBuffer: true);
+        }
 
+        private T Refresh(bool considerBuffer)
+        {
             lock (_locker_)
             {
-                if (_clock_() < _validUntil)
+                if (considerBuffer && _clock_() < _validUntil)
                     return _buffer;
 
-                return ForceRefresh();
+                _buffer = _factory_(_buffer);
+                _validUntil = NewValidUntil();
+
+                return _buffer;
             }
         }
 
         private DateTime NewValidUntil() => _clock_().Add(_bufferingPeriod_);
+        private static Func<T, T> Convert_FuncTToT_To_FuncT(Func<T> func)
+        {
+            if (func == null)
+                throw new ArgumentNullException(nameof(func));
+            return _ => func();
+        }
     }
 }
