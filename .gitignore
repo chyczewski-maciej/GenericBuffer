@@ -4,7 +4,6 @@
 ## Get latest from https://github.com/github/gitignore/blob/master/VisualStudio.gitignore
 
 # User-specific files
-lcov.info
 *.suo
 *.user
 *.userosscache
@@ -136,6 +135,9 @@ _TeamCity*
 # Visual Studio code coverage results
 *.coverage
 *.coveragexml
+
+# coverlet code coverage results
+lcov.info
 
 # NCrunch
 _NCrunch_*
