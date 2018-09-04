@@ -1,7 +1,5 @@
 ﻿using GenericBuffer.Core;
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace GenericBuffer.Samples
@@ -10,29 +8,42 @@ namespace GenericBuffer.Samples
     {
         public static async Task Main(string[] args)
         {
-            var infiniteLoop = InfiniteLoop().GetEnumerator();
-            var buffer = new AsyncGenericBuffer<int>(() =>
-            {
-                infiniteLoop.MoveNext();
-                Console.WriteLine("New value: " + infiniteLoop.Current);
-                return Task.FromResult(infiniteLoop.Current);
-            }, bufferingPeriod: TimeSpan.FromSeconds(0.5));
-
-
-            while (true)
-            {
-                Enumerable.Range(0, 10000).AsParallel().ForAll(x => buffer.ForceRefreshAsync().GetAwaiter().GetResult());
-            }
-        }
-
-        public static IEnumerable<int> InfiniteLoop()
-        {
-            while (true)
-                for (int i = 0; i < 10; i++)
+            int i = 0;
+            var genericBuffer = new GenericBuffer<int>(
+                factory: () => 
                 {
-                    Console.WriteLine("Generated new values");
-                    yield return i;
-                }
+                        Console.WriteLine("Generating new value...");
+                        return i++;
+                }, 
+                bufferingPeriod: TimeSpan.FromMilliseconds(200));
+
+            while(true)
+            {
+                Console.WriteLine($"Value: {genericBuffer.GetValue()}");
+                await Task.Delay(TimeSpan.FromMilliseconds(50));
+            }
+
+            // OUTPUT:
+            //Generating new value...
+            //Value: 0
+            //Value: 0
+            //Value: 0
+            //Value: 0
+            //Generating new value...
+            //Value: 1
+            //Value: 1
+            //Value: 1
+            //Value: 1
+            //Generating new value...
+            //Value: 2
+            //Value: 2
+            //Value: 2
+            //Value: 2
+            //Generating new value...
+            //Value: 3
+            //Value: 3
+            //Value: 3
+            //Value: 3
         }
     }
 }
