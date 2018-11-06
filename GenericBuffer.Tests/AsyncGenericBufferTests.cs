@@ -116,8 +116,6 @@ namespace GenericBuffer.Tests
             Assert.NotSame(firstObject, await AsyncGenericBuffer.GetValueAsync());
         }
 
-
-
         [Fact]
         public async Task ForceRefreshCreatesNewValueEvenIfTheOldOneIsStillValid()
         {
@@ -153,11 +151,11 @@ namespace GenericBuffer.Tests
                 bufferingPeriod: TimeSpan.FromTicks(1),
                 clock: ClockFactory.FrozenClock(DateTime.MinValue));
 
-            var tasks = Enumerable.Range(0, 100)
+            var tasks = Enumerable.Range(0, 1000)
                         .Select(_ => Task.Run(async () => await asyncGenericBuffer.GetValueAsync()));
 
             blockFactoryMethod = false;
-            await Task.Delay(1000);
+            await Task.Delay(2000);
             object[] results = await Task.WhenAll(tasks);
 
             foreach (var result in results)
