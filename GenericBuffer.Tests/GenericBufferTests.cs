@@ -15,6 +15,7 @@ namespace GenericBuffer.Tests
             Func<object, object> funcTT = null;
             Func<object> funcT = null;
 
+            // ReSharper disable ExpressionIsAlwaysNull
             Assert.Throws<ArgumentNullException>(() => new GenericBuffer<object>(
                 factory: funcTT,
                 initialValue: new object(),
@@ -34,20 +35,21 @@ namespace GenericBuffer.Tests
                 factory: funcT,
                 bufferingPeriod: TimeSpan.Zero,
                 ClockFactory.UtcClock()));
+            // ReSharper restore ExpressionIsAlwaysNull
         }
 
         [Fact]
         public void ThrowsArgumentNullExceptionWhenClockFuncIsNull()
         {
             Assert.Throws<ArgumentNullException>(() => new GenericBuffer<object>(
-                factory: _ => new object(), 
-                initialValue: new object(), 
-                bufferingPeriod: TimeSpan.Zero, 
+                factory: _ => new object(),
+                initialValue: new object(),
+                bufferingPeriod: TimeSpan.Zero,
                 clock: null));
 
             Assert.Throws<ArgumentNullException>(() => new GenericBuffer<object>(
-                factory: ()=>new object(), 
-                bufferingPeriod: TimeSpan.Zero, 
+                factory: () => new object(),
+                bufferingPeriod: TimeSpan.Zero,
                 clock: null));
         }
 
@@ -95,9 +97,9 @@ namespace GenericBuffer.Tests
                 bufferingPeriod: TimeSpan.Zero, clock:
                 ClockFactory.UtcClock());
 
-            var recoredException = Record.Exception(() => genericBuffer.GetValue());
+            Exception actualException = Record.Exception(() => genericBuffer.GetValue());
 
-            Assert.Same(expectedException, recoredException);
+            Assert.Same(expectedException, actualException);
         }
 
         [Fact]
