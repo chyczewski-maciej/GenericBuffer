@@ -15,10 +15,10 @@ namespace GenericBuffer.Core
         public GenericBuffer(Func<T> factory, TimeSpan bufferingPeriod) : this(factory, bufferingPeriod, () => DateTime.Now) { }
         public GenericBuffer(Func<T> factory, TimeSpan bufferingPeriod, Func<DateTime> clock)
             : this(
-                  factory: Convert_FuncTToT_To_FuncT(factory),
-                  initialValue: default,
-                  bufferingPeriod: bufferingPeriod,
-                  clock: clock)
+                factory: Convert_FuncTToT_To_FuncT(factory),
+                initialValue: default,
+                bufferingPeriod: bufferingPeriod,
+                clock: clock)
         { }
 
         public GenericBuffer(Func<T, T> factory, T initialValue, TimeSpan bufferingPeriod) : this(factory, initialValue, bufferingPeriod, () => DateTime.Now) { }
