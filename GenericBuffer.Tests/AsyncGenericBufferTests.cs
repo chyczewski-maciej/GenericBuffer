@@ -24,7 +24,7 @@ namespace GenericBuffer.Tests
                 factory: funcTT,
                 initialValue: new object(),
                 bufferingPeriod: TimeSpan.Zero,
-                ClockFactory.UtcClock()));
+                ClockFactory.FrozenClock()));
 
             Assert.Throws<ArgumentNullException>(() => new AsyncGenericBuffer<object>(
                 factory: funcT,
@@ -33,7 +33,7 @@ namespace GenericBuffer.Tests
             Assert.Throws<ArgumentNullException>(() => new AsyncGenericBuffer<object>(
                 factory: funcT,
                 bufferingPeriod: TimeSpan.Zero,
-                ClockFactory.UtcClock()));
+                ClockFactory.FrozenClock()));
         }
 
         [Fact]
@@ -93,7 +93,7 @@ namespace GenericBuffer.Tests
             var AsyncGenericBuffer = new AsyncGenericBuffer<object>(
                 factory: () => throw expectedException,
                 bufferingPeriod: TimeSpan.Zero,
-                clock: ClockFactory.UtcClock());
+                clock: ClockFactory.FrozenClock());
 
             Exception recoredException = await Record.ExceptionAsync(async () => await AsyncGenericBuffer.GetValueAsync());
 
@@ -106,7 +106,7 @@ namespace GenericBuffer.Tests
             var AsyncGenericBuffer = new AsyncGenericBuffer<object>(
                 factory: () => Task.FromResult(new object()),
                 bufferingPeriod: TimeSpan.FromTicks(1),
-                clock: ClockFactory.FrozenClock(DateTime.MinValue));
+                clock: ClockFactory.FrozenClock());
 
             var firstObject = await AsyncGenericBuffer.GetValueAsync();
             Assert.Same(firstObject, await AsyncGenericBuffer.GetValueAsync());
@@ -123,7 +123,7 @@ namespace GenericBuffer.Tests
             var asyncGenericBuffer = new AsyncGenericBuffer<object>(
                 factory: () => Task.FromResult(new object()),
                 bufferingPeriod: TimeSpan.FromTicks(1),
-                clock: ClockFactory.FrozenClock(DateTime.MinValue));
+                clock: ClockFactory.FrozenClock());
 
             var val1 = await asyncGenericBuffer.GetValueAsync();
             var val2 = await asyncGenericBuffer.GetValueAsync();
@@ -150,7 +150,7 @@ namespace GenericBuffer.Tests
                     return Task.FromResult(new object());
                 },
                 bufferingPeriod: TimeSpan.FromTicks(1),
-                clock: ClockFactory.FrozenClock(DateTime.MinValue));
+                clock: ClockFactory.FrozenClock());
 
             var tasks = Enumerable.Range(0, 1000)
                         .Select(_ => Task.Run(async () => await asyncGenericBuffer.GetValueAsync()));
