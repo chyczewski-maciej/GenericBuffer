@@ -26,7 +26,11 @@ build:
   include_nuget_references: true # add -IncludeReferencedProjects option while packaging NuGet artifacts
 
 test_script:
-  - dotnet test .\GenericBuffer.Tests\GenericBuffer.Tests.csproj  /p:CollectCoverage=true
+  - dotnet test .\GenericBuffer.Tests\GenericBuffer.Tests.csproj -p:CollectCoverage=true -p:CoverletOutputFormat=lcov -p:CoverletOutput=./../lcov.info
+
+artifacts:
+  - path: ./lcov.info
+    name: lcov.info
 
 deploy:
 - provider: NuGet
