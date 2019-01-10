@@ -144,7 +144,6 @@ namespace GenericBuffer.Tests
         [Fact]
         public async Task Creates_item_only_once_when_get_value_is_called_in_parallel()
         {
-            var rand = new Random();
             var blockFactoryMethod = true;
 
             var genericBuffer = new GenericBuffer<object>(
