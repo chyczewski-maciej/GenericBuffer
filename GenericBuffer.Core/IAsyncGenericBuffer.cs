@@ -1,11 +1,12 @@
-﻿using System.Threading.Tasks;
+﻿using System.Threading;
+using System.Threading.Tasks;
 
 namespace GenericBuffer.Core
 {
     public interface IAsyncGenericBuffer<T>
     {
-        Task<T> ForceRefreshAsync();
-        Task<T> GetValueAsync();
-        Task ResetAsync();
+        Task<T> ForceRefreshAsync(CancellationToken cancellationToken);
+        Task<T> GetValueAsync(CancellationToken cancellationToken);
+        Task ResetAsync(CancellationToken cancellationToken);
     }
 }

@@ -12,7 +12,7 @@ namespace GenericBuffer.Core
         private DateTime _validUntil = DateTime.MinValue;
         private T _buffer;
 
-        public GenericBuffer(Func<T> factory, TimeSpan bufferingPeriod) : this(factory, bufferingPeriod, () => DateTime.Now) { }
+        public GenericBuffer(Func<T> factory, TimeSpan bufferingPeriod) : this(factory, bufferingPeriod, () => DateTime.UtcNow) { }
         public GenericBuffer(Func<T> factory, TimeSpan bufferingPeriod, Func<DateTime> clock)
             : this(
                 factory: Convert_FuncTToT_To_FuncT(factory),
@@ -21,7 +21,7 @@ namespace GenericBuffer.Core
                 clock: clock)
         { }
 
-        public GenericBuffer(Func<T, T> factory, T initialValue, TimeSpan bufferingPeriod) : this(factory, initialValue, bufferingPeriod, () => DateTime.Now) { }
+        public GenericBuffer(Func<T, T> factory, T initialValue, TimeSpan bufferingPeriod) : this(factory, initialValue, bufferingPeriod, () => DateTime.UtcNow) { }
 
         public GenericBuffer(Func<T, T> factory, T initialValue, TimeSpan bufferingPeriod, Func<DateTime> clock)
         {
