@@ -1,4 +1,4 @@
-version: 1.0.0.{build}
+version: 1.1.0.{build}
 image: Visual Studio 2017
 platform:
   - Any CPU
@@ -18,14 +18,17 @@ dotnet_csproj:
   assembly_version: "{version}"
   file_version: "{version}"
 
-build:
-  verbosity: minimal
-  publish_nuget: true # package projects with .nuspec files and push to artifacts
-  publish_nuget_symbols: true # generate and publish NuGet symbol packages
-  include_nuget_references: true # add -IncludeReferencedProjects option while packaging NuGet artifacts
+# build:
+#   verbosity: minimal
+#   publish_nuget: true # package projects with .nuspec files and push to artifacts
+#   publish_nuget_symbols: true # generate and publish NuGet symbol packages
+#   include_nuget_references: true # add -IncludeReferencedProjects option while packaging NuGet artifacts
 
 test_script:
   - dotnet test .\GenericBuffer.Tests\GenericBuffer.Tests.csproj -p:CollectCoverage=true -p:CoverletOutputFormat=lcov -p:CoverletOutput=./../lcov.info
+
+build_script:
+  - msbuild "C:\projects\genericbuffer\GenericBuffer.sln" /verbosity:minimal /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
 
 artifacts:
   - path: ./lcov.info
