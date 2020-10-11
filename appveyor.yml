@@ -7,9 +7,9 @@ configuration:
   - Release
 
 before_build:
-  - dotnet --info
-  - dotnet --version
-  - nuget restore
+  - cmd: dotnet --info
+  - cmd: dotnet --version
+  - cmd: nuget restore
 
 dotnet_csproj:
   patch: true
