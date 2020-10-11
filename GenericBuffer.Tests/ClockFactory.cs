@@ -5,6 +5,7 @@ namespace GenericBuffer.Tests
 {
     public class ClockFactory
     {
+        public static Func<DateTime> FrozenClock() => () => DateTime.MinValue;
         public static Func<DateTime> FrozenClock(DateTime dateTime) => () => dateTime;
         public static Func<DateTime> UtcClock() => () => DateTime.UtcNow;
         public static Func<DateTime> UtcClock(DateTime startDateTime) => UtcClockWithOffset(startDateTime.Subtract(DateTime.UtcNow));

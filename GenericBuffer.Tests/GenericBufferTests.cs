@@ -26,7 +26,7 @@ namespace GenericBuffer.Tests
                 factory: funcTT,
                 initialValue: new object(),
                 bufferingPeriod: TimeSpan.Zero,
-                ClockFactory.UtcClock()));
+                ClockFactory.FrozenClock()));
 
             Assert.Throws<ArgumentNullException>(() => new GenericBuffer<object>(
                 factory: funcT,
@@ -35,7 +35,7 @@ namespace GenericBuffer.Tests
             Assert.Throws<ArgumentNullException>(() => new GenericBuffer<object>(
                 factory: funcT,
                 bufferingPeriod: TimeSpan.Zero,
-                ClockFactory.UtcClock()));
+                ClockFactory.FrozenClock()));
             // ReSharper restore ExpressionIsAlwaysNull
         }
 
@@ -96,7 +96,7 @@ namespace GenericBuffer.Tests
             var genericBuffer = new GenericBuffer<object>(
                 factory: () => throw expectedException,
                 bufferingPeriod: TimeSpan.Zero, clock:
-                ClockFactory.UtcClock());
+                ClockFactory.FrozenClock());
 
             Exception actualException = Record.Exception(() => genericBuffer.GetValue());
 
@@ -109,7 +109,7 @@ namespace GenericBuffer.Tests
             var genericBuffer = new GenericBuffer<object>(
                 factory: () => new object(),
                 bufferingPeriod: TimeSpan.FromTicks(1),
-                clock: ClockFactory.FrozenClock(DateTime.MinValue));
+                clock: ClockFactory.FrozenClock());
 
             var firstObject = genericBuffer.GetValue();
             Assert.Same(firstObject, genericBuffer.GetValue());
@@ -126,7 +126,7 @@ namespace GenericBuffer.Tests
             var genericBuffer = new GenericBuffer<object>(
                 factory: () => new object(),
                 bufferingPeriod: TimeSpan.FromTicks(1),
-                clock: ClockFactory.FrozenClock(DateTime.MinValue));
+                clock: ClockFactory.FrozenClock());
 
 
             var val1 = genericBuffer.GetValue();
@@ -144,7 +144,6 @@ namespace GenericBuffer.Tests
         [Fact]
         public async Task Creates_item_only_once_when_get_value_is_called_in_parallel()
         {
-            var rand = new Random();
             var blockFactoryMethod = true;
 
             var genericBuffer = new GenericBuffer<object>(
@@ -154,7 +153,7 @@ namespace GenericBuffer.Tests
                     return new object();
                 },
                 bufferingPeriod: TimeSpan.FromTicks(1),
-                clock: ClockFactory.FrozenClock(DateTime.MinValue));
+                clock: ClockFactory.FrozenClock());
 
             var tasks = Enumerable.Range(0, 100)
                         .Select(_ => Task.Run(() => genericBuffer.GetValue()));
