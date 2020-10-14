@@ -6,29 +6,40 @@ namespace GenericBuffer.Core
 {
     public class AsyncGenericBuffer<T> : IAsyncGenericBuffer<T>
     {
-        private readonly Func<T, Task<T>> _factory_;
+        private readonly SemaphoreSlim _semaphoreSlim_ = new SemaphoreSlim(1);
+        private readonly Func<T, CancellationToken, Task<T>> _factory_;
         private readonly Func<DateTime> _clock_;
         private readonly TimeSpan _bufferingPeriod_;
 
-        private readonly SemaphoreSlim semaphoreSlim = new SemaphoreSlim(1);
         private DateTime validUntil = DateTime.MinValue;
         private T buffer;
 
-        public AsyncGenericBuffer(Func<Task<T>> factory, TimeSpan bufferingPeriod) : this(factory, bufferingPeriod, () => DateTime.Now) { }
-        public AsyncGenericBuffer(Func<Task<T>> factory, TimeSpan bufferingPeriod, Func<DateTime> clock) : this(Convert_FuncTToTaskT_To_FuncTaskT(factory), default, bufferingPeriod, clock) { }
-        public AsyncGenericBuffer(Func<T, Task<T>> factory, T initialValue, TimeSpan bufferingPeriod) : this(factory, initialValue, bufferingPeriod, () => DateTime.Now) { }
+        public AsyncGenericBuffer(Func<T, CancellationToken, Task<T>> factory, T initialValue, TimeSpan bufferingPeriod) : this(factory, initialValue, bufferingPeriod, () => DateTime.UtcNow) { }
 
-        public AsyncGenericBuffer(Func<T, Task<T>> factory, T initialValue, TimeSpan bufferingPeriod, Func<DateTime> clock)
+        public AsyncGenericBuffer(Func<T, CancellationToken, Task<T>> factory, T initialValue, TimeSpan bufferingPeriod, Func<DateTime> clock)
         {
             _factory_ = factory ?? throw new ArgumentNullException(nameof(factory));
-            _clock_ = clock  ?? throw new ArgumentNullException(nameof(clock));;
+            _clock_ = clock ?? throw new ArgumentNullException(nameof(clock));
             _bufferingPeriod_ = bufferingPeriod;
             buffer = initialValue;
         }
 
-        public async Task ResetAsync()
+        public AsyncGenericBuffer(Func<CancellationToken, Task<T>> factory, TimeSpan bufferingPeriod) : this(factory, bufferingPeriod, () => DateTime.UtcNow) { }
+        public AsyncGenericBuffer(Func<CancellationToken, Task<T>> factory, TimeSpan bufferingPeriod, Func<DateTime> clock) : this(factory, default, bufferingPeriod, clock) { }
+
+        public AsyncGenericBuffer(Func<CancellationToken, Task<T>> factory, T initialValue, TimeSpan bufferingPeriod, Func<DateTime> clock)
         {
-            await semaphoreSlim.WaitAsync();
+            if (factory == null)
+                throw new ArgumentNullException(nameof(factory));
+            _factory_ = (_, ct) => factory(ct);
+            _clock_ = clock ?? throw new ArgumentNullException(nameof(clock)); ;
+            _bufferingPeriod_ = bufferingPeriod;
+            buffer = initialValue;
+        }
+
+        public async Task ResetAsync(CancellationToken cancellationToken)
+        {
+            await _semaphoreSlim_.WaitAsync(cancellationToken);
             try
             {
                 buffer = default;
@@ -36,48 +47,41 @@ namespace GenericBuffer.Core
             }
             finally
             {
-                semaphoreSlim.Release();
+                _semaphoreSlim_.Release();
             }
         }
 
-        public async Task<T> ForceRefreshAsync()
+        public async Task<T> ForceRefreshAsync(CancellationToken cancellationToken)
         {
-            return await RefreshAsync(considerBuffer: false);
+            return await RefreshAsync(false, cancellationToken);
         }
 
-        public async Task<T> GetValueAsync()
+        public async Task<T> GetValueAsync(CancellationToken cancellationToken)
         {
             if (_clock_() < validUntil)
                 return buffer;
 
-            return await RefreshAsync(considerBuffer: true);
+            return await RefreshAsync(true, cancellationToken);
         }
 
         private DateTime NewValidUntil() => _clock_().Add(_bufferingPeriod_);
 
-        private async Task<T> RefreshAsync(bool considerBuffer)
+        private async Task<T> RefreshAsync(Boolean considerBuffer, CancellationToken cancellationToken)
         {
-            await semaphoreSlim.WaitAsync();
+            await _semaphoreSlim_.WaitAsync(cancellationToken);
             try
             {
                 if (considerBuffer && _clock_() < validUntil)
                     return buffer;
 
-                buffer = await _factory_(buffer);
+                buffer = await _factory_(buffer, cancellationToken);
                 validUntil = NewValidUntil();
                 return buffer;
             }
             finally
             {
-                semaphoreSlim.Release();
+                _semaphoreSlim_.Release();
             }
-        }
-
-        private static Func<T, Task<T>> Convert_FuncTToTaskT_To_FuncTaskT(Func<Task<T>> func)
-        {
-            if (func == null)
-                throw new ArgumentNullException(nameof(func));
-            return _ => func();
         }
     }
 }

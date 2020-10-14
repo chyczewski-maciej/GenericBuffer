@@ -1,2 +1,1 @@
 [![NuGet](https://img.shields.io/nuget/v/GenericBuffer.Core.svg?style=flat)](https://www.nuget.org/packages/GenericBuffer.Core/)
-[![Build Status](https://ci.appveyor.com/api/projects/status/github/chyczewski-maciej/genericbuffer?branch=master&svg=true)](https://ci.appveyor.com/project/chyczewski-maciej/genericbuffer/branch/master)
