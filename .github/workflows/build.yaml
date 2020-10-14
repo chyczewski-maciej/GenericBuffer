@@ -16,10 +16,13 @@ jobs:
         uses: actions/setup-dotnet@v1
         with:
           dotnet-version: 3.1.301
+      - name: ls
+        run: ls
+      - name: pwd
+        run: pwd
       - name: Install dependencies
         run: dotnet restore
       - name: Test
-        working-directory: .\GenericBuffer
         run: dotnet test .\GenericBuffer.Tests\GenericBuffer.Tests.csproj -p:CollectCoverage=true -p:CoverletOutputFormat=lcov -p:CoverletOutput=./../lcov.info
       - name: Build
         run: dotnet build --configuration Release --no-restore
