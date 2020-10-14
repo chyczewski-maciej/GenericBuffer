@@ -26,7 +26,7 @@ jobs:
           version: ""
         with:
           projectFilter: ./GenericBuffer.Core/GenericBuffer.Core.csproj
-          version: "0.1.0.0"
+          version: "0.1.0.1"
           assemblyVersion: "0.1.0.1"
           fileVersion: "0.1.0.1"
       - name: Install dependencies
