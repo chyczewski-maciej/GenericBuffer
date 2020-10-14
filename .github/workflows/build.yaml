@@ -23,6 +23,6 @@ jobs:
       - name: Install dependencies
         run: dotnet restore
       - name: Test
-        run: dotnet test .\GenericBuffer.Tests\GenericBuffer.Tests.csproj -p:CollectCoverage=true -p:CoverletOutputFormat=lcov -p:CoverletOutput=./../lcov.info
+        run: dotnet test ./GenericBuffer.Tests/GenericBuffer.Tests.csproj
       - name: Build
         run: dotnet build --configuration Release --no-restore
