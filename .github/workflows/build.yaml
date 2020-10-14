@@ -22,12 +22,14 @@ jobs:
         run: pwd
       - name: Update project version
         uses: roryprimrose/set-vs-sdk-project-version@v1
+        env:
+          version: ""
         with:
           projectFilter: "*.csproj"
-          version: ${{ version }}
-          assemblyVersion: ${{ version }}
-          fileVersion: ${{ version }}
-          packageVersion: ${{ version }}
+          version: "1.0.0.0"
+          assemblyVersion: "1.0.0.0"
+          fileVersion: "1.0.0.0"
+          packageVersion: "1.0.0.0"
       - name: Install dependencies
         run: dotnet restore
       - name: Test
