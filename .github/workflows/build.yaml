@@ -26,9 +26,9 @@ jobs:
           version: ""
         with:
           projectFilter: ./GenericBuffer.Core/GenericBuffer.Core.csproj
-          version: "1.1.0.0"
-          assemblyVersion: "1.1.0.0"
-          fileVersion: "1.1.0.0"
+          version: "0.1.0.0"
+          assemblyVersion: "0.1.0.1"
+          fileVersion: "0.1.0.1"
       - name: Install dependencies
         run: dotnet restore
       - name: Test
@@ -37,5 +37,5 @@ jobs:
         run: dotnet build --configuration Release --no-restore
       - name: Pack with dotnet
         run: dotnet pack ./GenericBuffer.Core/GenericBuffer.Core.csproj --output nuget-packages --configuration Release
-      # - name: Push with dotnet
-      #   run: dotnet nuget push nuget-packages/*.nupkg --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json
+      - name: Push with dotnet
+        run: dotnet nuget push nuget-packages/*.nupkg --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json

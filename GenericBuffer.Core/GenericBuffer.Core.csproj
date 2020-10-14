@@ -18,9 +18,6 @@
   
     <OutputType>library</OutputType>
     
-    <FileVersion>0.0.1.0</FileVersion>
-    <AssemblyVersion>0.0.1.0</AssemblyVersion>
-    
     <IsPackable>true</IsPackable>
     <PackageId>GenericBuffer.Core</PackageId>
     <OutputPath>../artifacts</OutputPath>
