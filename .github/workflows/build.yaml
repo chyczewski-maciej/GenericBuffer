@@ -1,0 +1,24 @@
+name: Build
+
+on:
+  push:
+    branches: [master, develop]
+  pull_request:
+    branches: [master]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: Setup .NET Core
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: 3.1.301
+      - name: Install dependencies
+        run: dotnet restore
+      - name: Test
+        run: dotnet test .\GenericBuffer.Tests\GenericBuffer.Tests.csproj -p:CollectCoverage=true -p:CoverletOutputFormat=lcov -p:CoverletOutput=./../lcov.info
+      - name: Build
+        run: dotnet build --configuration Release --no-restore
