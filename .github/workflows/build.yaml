@@ -20,9 +20,21 @@ jobs:
         run: ls
       - name: pwd
         run: pwd
+      - name: Update project version
+        uses: roryprimrose/set-vs-sdk-project-version@v1
+        with:
+          projectFilter: "*.csproj"
+          version: ${{ version }}
+          assemblyVersion: ${{ version }}
+          fileVersion: ${{ version }}
+          packageVersion: ${{ version }}
       - name: Install dependencies
         run: dotnet restore
       - name: Test
         run: dotnet test ./GenericBuffer.Tests/GenericBuffer.Tests.csproj
       - name: Build
         run: dotnet build --configuration Release --no-restore
+      - name: Pack with dotnet
+        run: dotnet pack ./GenericBuffer.Core/GenericBuffer.Core.csproj --output nuget-packages --configuration Release
+      # - name: Push with dotnet
+      #   run: dotnet nuget push nuget-packages/*.nupkg --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json
