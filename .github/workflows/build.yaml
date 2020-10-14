@@ -26,9 +26,7 @@ jobs:
           version: ""
         with:
           projectFilter: ./GenericBuffer.Core/GenericBuffer.Core.csproj
-          version: "0.1.0.2"
-          assemblyVersion: "0.1.0.2"
-          fileVersion: "0.1.0.2"
+          version: "1.1.0.1"
       - name: Install dependencies
         run: dotnet restore
       - name: Test
