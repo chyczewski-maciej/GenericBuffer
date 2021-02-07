@@ -16,17 +16,6 @@ jobs:
         uses: actions/setup-dotnet@v1
         with:
           dotnet-version: 3.1.301
-      - name: ls
-        run: ls
-      - name: pwd
-        run: pwd
-      - name: Update project version
-        uses: roryprimrose/set-vs-sdk-project-version@v1
-        env:
-          version: ""
-        with:
-          projectFilter: ./GenericBuffer.Core/GenericBuffer.Core.csproj
-          version: "1.1.0.1"
       - name: Install dependencies
         run: dotnet restore
       - name: Test

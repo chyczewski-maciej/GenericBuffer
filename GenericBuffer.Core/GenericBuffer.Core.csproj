@@ -20,7 +20,7 @@
     
     <IsPackable>true</IsPackable>
     <PackageId>GenericBuffer.Core</PackageId>
-    <OutputPath>../artifacts</OutputPath>
+    <Version>1.1.0.3</Version>
   </PropertyGroup>
 
 </Project>
